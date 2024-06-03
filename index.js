@@ -8,12 +8,13 @@ const port = 3000;
 const countrytoiso = require('country-to-iso');
 
 
+
 app.use(express.static('public'));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'app.html'));
   });
 app.get('/country-data/:countryName', async (req, res) => {
-  const countryName = req.params.countryName;
+  var countryName = req.params.countryName;
   const countryCode = countrytoiso.countryToAlpha2(countryName)
   console.log(`requested country ${countryName} , ${countryCode}`);
   

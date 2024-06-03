@@ -5,18 +5,62 @@ body, html {
     height: 100%;
     width: 100%;
   }
-  /* #map {
-    height: 100%;
-    width: 100%;
-  } */
-  /* #country-data {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: white;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    z-index: 999;
-  } */
-  
+
+#nav-bar {
+  background-color: #142624;
+  padding: 3.5em;
+  height: 100vh;
+}
+
+.custom-h2{
+  padding: 1em;
+  padding-bottom: 0.5em;
+  font-size: 40px;
+  color: #F2EBDC;
+  font-family: "Urbanist", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.paragraph-button{
+  padding: 0;
+  margin: 0;
+}
+
+#map {
+  background-color: #5A6E73;
+  height: 100vh;
+}
+
+.no-padding{
+  padding: 0% !important;
+  margin: 0% !important;
+}
+
+#button-volver-atras {
+  background-color: #3C3B34 !important;
+}
+
+.button-nav{
+  padding: 1em !important;
+  margin-top: 1em !important;
+  margin-bottom: 1em !important;
+  border-radius: 20px !important;
+  width: 10em !important;
+  background-color: #959280 !important;
+  border-style: none !important;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19) !important;
+}
+
+.button-nav:hover {
+  background-color: #5A6E73 !important;
+}
+
+
+#container_bienestar_social{
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+
