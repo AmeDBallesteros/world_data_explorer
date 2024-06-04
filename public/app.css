@@ -28,11 +28,6 @@ body, html {
   margin: 0;
 }
 
-#map {
-  background-color: #5A6E73;
-  height: 100vh;
-}
-
 .no-padding{
   padding: 0% !important;
   margin: 0% !important;
@@ -63,4 +58,42 @@ body, html {
   overflow-y: auto;
 }
 
+#button-container {
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  background-color: rgba(240, 248, 255, 0.4);
+  bottom: 30px;
+  width: 100%;
+  z-index: 2000;
+  pointer-events: auto;
+}
+.custom-button {
+  margin: 1em;
+}
+
+#un_pais{
+  background-color: #573A5C;
+  border: none;
+}
+
+#dos_paises{
+  background-color: #a19ca2;
+  border: none;
+}
+
+#un_pais:hover, #dos_paises:hover{
+  background-color: #573A5C;
+  border: none;
+}
+
+#map-container {
+  position: relative;
+  height: 100vh;
+}
+#map {
+  background-color: #5A6E73;
+  height: 100%;
+  z-index: 0;
+}
 

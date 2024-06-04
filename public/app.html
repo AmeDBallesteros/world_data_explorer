@@ -18,6 +18,7 @@
 </head>
 
 <body>
+
   <div class="container-fluid no-padding">
     <div id="country-data" hidden></div>
     <div class="row no-padding">
@@ -304,8 +305,13 @@
         </div>
 
       </div>
-      <div class="col-8 no-padding">
-        <div id="map" class="no-padding"></div>
+      <div class="col-8 no-padding" id="container_map">
+        <div id="map" class="no-padding">
+          <div id="button-container">
+            <button class="btn btn-primary custom-button" id="un_pais" value="1" onclick="uno_o_dos_paises('un_pais')">Consultar datos para 1 país</button>
+            <button class="btn btn-secondary custom-button" id="dos_paises" value="2" onclick="uno_o_dos_paises('dos_paises')">Comparar datos para 2 países</button>
+        </div>
+        </div>
       </div>
     </div>
 
