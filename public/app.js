@@ -1,6 +1,7 @@
-// public/script.js
 
-
+// Comienza a ejecutar el código JavaScript solo si se ha cargado todo el archivo HTML 
+// Añade el mapa leaflet a la página y establece su vista inicial
+// Añade mi capa de colores personalizados al mapa
 
 document.addEventListener('DOMContentLoaded', () => {
   const map = L.map('map', {
@@ -10,141 +11,181 @@ document.addEventListener('DOMContentLoaded', () => {
     noWrap: true
   }).setView([20, 0], 2);
 
-
   L.tileLayer('https://tile.jawg.io/907408c2-9102-4012-94a7-86c2b203d920/{z}/{x}/{y}{r}.png?access-token=XzL0eaAuqlmFuHoZrJTHdiyKwuE62EOnvOPIPTQfIYsg1o4An2M4Vo7f1gA29qMo').addTo(map);
 
-  const provider = new window.GeoSearch.OpenStreetMapProvider({
+
+  // Crea una nueva instancia de OpenStreetMapProvider, que es una clase de Leaflet-geosearch que permite
+  // realizar búsquedas de ubicaciones utilizando los datos de OpenStreetMap. Se configura el inglés como
+  // idioma preferido para los resultados de la búsqueda
+
+  const proveedor = new window.GeoSearch.OpenStreetMapProvider({
     params: {
-      'accept-language': 'en', // render results in Dutch
+      'accept-language': 'en', 
     },
   }
   );
-  let selectedCountries = [];
-  // Estilo por defecto con relleno transparente
-  function defaultStyle(feature) {
+
+
+  // Establecer funciones con los estilos a utilizar para que los países se muestren de un color cuando 
+  // el mouse está sobre ellos y de otro color cuando se hace click en un país concreto
+
+  function default_estilo(feature) {
     return {
       color: "transparent",
       fillColor: "transparent",
       weight: 1
     };
   }
-  // Estilo para hover
-  function highlightStyle(feature) {
+  
+  function hover_estilo(feature) {
     return {
       color: "#294039",
       fillColor: "#294039",
       weight: 2
     };
   }
-  // Estilo para clic
-  function clickStyle(feature) {
+  
+  function click_estilo(feature) {
     return {
       color: "#594B22",
       fillColor: "#594B22",
       weight: 3
     };
   }
-  function onEachFeature(feature, layer) {
-    layer.on({
+
+
+  // Las funciones on_each_feature se utilizan en objetos GeoJSON para agregar características a cada
+  // feature del mapa. Aquí se utiliza para agregar los estilos en función de los eventos mouseover,
+  // mouseout y click.
+
+  function on_each_feature(feature, pais) {
+    pais.on({
       mouseover: function (e) {
-        if (!layer.options.clicked) {
-          layer.setStyle(highlightStyle());
+        if (!pais.options.clicked) {
+          pais.setStyle(hover_estilo());
         }
       },
       mouseout: function (e) {
-        if (!layer.options.clicked) {
-          geojsonLayer.resetStyle(layer);
+        if (!pais.options.clicked) {
+          capa_geojson.resetStyle(pais);
         }
       },
       click: function (e) {
-        geojsonLayer.eachLayer(function (layer) {
-          layer.options.clicked = false;
-          geojsonLayer.resetStyle(layer);
+        capa_geojson.eachLayer(function (pais) {
+          pais.options.clicked = false;
+          capa_geojson.resetStyle(pais);
         });
-        layer.setStyle(clickStyle());
-        layer.options.clicked = true;
-        var countryName = feature.properties.name;
-        fetchCountryData(countryName);
+        pais.setStyle(click_estilo());
+        pais.options.clicked = true;
+        var nombre_pais = feature.properties.name; /////////// //let selectedCountries = [];
+        fetch_data_pais(nombre_pais);
       }
     });
   }
-  var geojsonLayer = L.geoJson(null, {
-    style: defaultStyle,
-    onEachFeature: onEachFeature
+
+
+  // Crea una nueva capa GeoJSON sin datos iniciales, a la que asigna el estilo por defecto (transparente)
+  // y aplica a cada característica de la capa la función que agrega los estilos interactivos
+
+  var capa_geojson = L.geoJson(null, {
+    style: default_estilo,
+    onEachFeature: on_each_feature
   }).addTo(map);
-  function addGeoJSONData(data) {
-    geojsonLayer.addData(data);
-  }
-  async function addGeoJSONDataFromFile(url) {
+
+
+  // Carga y adición de los datos GeoJSON al mapa por medio de una función asíncrona
+
+  async function incluir_data_geojson(url) {
     try {
-      const response = await fetch(url);
-      const data = await response.json();
-      geojsonLayer.addData(data);
+      const respuesta = await fetch(url);
+      const data = await respuesta.json();
+      capa_geojson.addData(data);
     } catch (error) {
-      console.error('Error loading GeoJSON data:', error);
+      console.error('Hubo un error al cargar los datos GeoJSON:', error);
     }
   }
 
-  addGeoJSONDataFromFile('custom.geo.json');
+  incluir_data_geojson('custom.geo.json');
 
 
-  async function onMapClick(e) {
-    const latlng = e.latlng;
-    var countryName = await getCountryName(latlng);
-    if (countryName) {
-      fetchCountryData(countryName);
+  // Función que obtiene las coordenadas del lugar en el que se hizo click. Con esas coordenadas averigua
+  // el nombre del país que se encuentra en esa posición, haciendo uso de otra función. Finalmente, si
+  // obtiene el nombre del país, se ejecuta otra función para extraer datos sobre ese país
+
+  async function encontrar_pais(e) {
+    const latitud_longitud = e.latlng;
+    var nombre_pais = await obtener_nombre_pais(latitud_longitud);
+    if (nombre_pais) {
+      fetch_data_pais(nombre_pais);
     } else {
-      console.error('Country name could not be retrieved.');
+      console.error('No ha sido posible obtener el nombre del país.');
     }
   }
 
-  function getLastValue(inputString) {
-    const parts = inputString.split(', ');
-    return parts[parts.length - 1];
+
+  // Al tratar de buscar los datos del país que se encuentra en la posición sobre la que se ha hecho click,
+  // estos datos se devuelven en formato string separados por comas. El nombre del país es el último elemento 
+  // de esa string. Esta función convierte el string en array y extrae el su último elemento, que es el nombre
+  // del país seleccionado
+
+  function ultimo_valor_array(input_array) {
+    const partes_array = input_array.split(', ');
+    return partes_array[partes_array.length - 1];
   }
 
-  async function getCountryName(latlng) {
-    try {
-      const results = await provider.search({ query: `${latlng.lat},${latlng.lng}` });
-      console.log('Geocoding results:', results); // Log the results for debugging
 
-      if (results && results.length > 0) {
-        const address = results[0].raw.display_name;
-        console.log(address);
-        if (address) {
-          var countryName = getLastValue(address);
-          console.log(countryName)
-          return countryName.toLowerCase();
+  // Esta función envía una consulta al proveedor de OpenStreetMap para obtener como respuesta la diracción 
+  // sober la que se ha hecho click en el mapa. De entre los resultados que recibe como respuesta, escoge el
+  // primero. Luego, utiliza la función creada anteriormente para convertir la dirección en array, y de ahí
+  // obtener el nombre del país. En caso de error, devuelve null
+
+  async function obtener_nombre_pais(latitud_longitud) {
+    try {
+      const resultado = await provider.search({ query: `${latitud_longitud.lat},${latitud_longitud.lng}` });
+
+      if (resultado && resultado.length > 0) {
+        const direccion = resultado[0].raw.display_name;
+        console.log(direccion);
+        if (direccion) {
+          var nombre_pais = ultimo_valor_array(direccion);
+          console.log(nombre_pais)
+          return nombre_pais.toLowerCase();
         }
       }
-
-      console.error('No valid country name found in the geocoding results.');
+      console.error('No se ha encontrado un nombre de país válido.');
       return null;
+
     } catch (error) {
-      console.error('Error fetching country name:', error);
+      console.error('Hubo un error al tratar de obtener el nombre del país:', error);
       return null;
     }
   }
 
-  async function fetchCountryData(countryName) {
+
+  // Esta función trata de obtener los datos para el país elegido. Para ello realiza una solicitud HTTP GET a
+  // la URL del servidor. El servidor solicita los datos a la API de World Data Bank. Si se reciben los datos
+  // correctamente, se ejecuta una función que los muestra
+
+  async function fetch_data_pais(nombre_pais) {
     try {
-      const response = await fetch(`/country-data/${countryName}`);
-      const data = await response.json();
-      console.log("requested data");
-      displayCountryData(data);
+      const respuesta = await fetch(`/data_pais/${nombre_pais}`);
+      const data = await respuesta.json();
+      console.log("Datos solicitados");
+      //mostrar_datos_pais(data);
     } catch (error) {
-      console.error('Error fetching country data:', error);
+      console.error('Hubo un error al tratar de obtener los datos del país:', error);
     }
   }
 
 
+  // Función que muestra los datos del país
 
-  function displayCountryData(data) {
+  /* function mostrar_datos_pais(data) {
     console.log(data);
-    const countryDataDiv = document.getElementById('country-data');
+    const container_data_pais = document.getElementById('data_pais');
     if (data[1] && data[1][0]) {
       const countryInfo = data[1][0];
-      countryDataDiv.innerHTML = `
+      container_data_pais.innerHTML = `
       <div class="row p-3">
         <h3>${countryInfo.name} <span id="countryiso"> ${countryInfo.iso2Code}</span></h3>
       </div>
@@ -156,31 +197,46 @@ document.addEventListener('DOMContentLoaded', () => {
           var iso = document.getElementById("countryiso").innerText.trim().toLowerCase();
           var indicator = event.target.value;
           try {
-            const response = await fetch(`http://api.worldbank.org/v2/country/${iso}/indicator/${indicator}?format=json`);
-            const data = await response.json();
+            const respuesta = await fetch(`http://api.worldbank.org/v2/country/${iso}/indicator/${indicator}?format=json`);
+            const data = await respuesta.json();
             displayIndicatorData(data);
           } catch (error) {
-            console.error('Error fetching indicator data:', error);
+            console.error('Hubo un error tratando de obtener datos para esa categoría:', error);
           }
         });
       });
     } else {
-      countryDataDiv.innerHTML = `<p>No data available for this country.</p>`;
+      container_data_pais.innerHTML = `<p>No data available for this country.</p>`;
     }
-  }
+  } 
 
   function displayIndicatorData(data) {
     console.log(data);
 
-  }
+  } */
 
 
+  // Asignar al mapa la función de encontrar el país cuando se haga click sobre el mapa
 
-  map.on('click', onMapClick);
+  map.on('click', encontrar_pais);
 });
 
 
-//Función para volver atrás desde los submenús
+// Función para mostrar los submenús de las distintas categorías. Al hacer click en una de las categorías
+// que aparecen inicialmente en la interfaz, esta interfaz principal desaparece y se muestra el submenú
+// correspondiente a la categoría seleccionada
+
+function mostrar_submenu(container_id) {
+
+  document.getElementById('h2_categorias').style.display = 'none';
+  document.getElementById('menu_principal').style.display = 'none';
+
+  document.getElementById(container_id).style.display = 'block';
+}
+
+
+//Función para volver al menú principal desde los submenús
+
 function volver_atras() {
   document.getElementById('h2_categorias').style.display = 'block';
   document.getElementById('menu_principal').style.display = 'block';
@@ -196,29 +252,24 @@ function volver_atras() {
   document.getElementById('container_seguridad').style.display = 'none';
 }
 
-
 button_volver_atras.onclick = volver_atras;
 
 
-function mostrar_submenu(container_id) {
-
-  document.getElementById('h2_categorias').style.display = 'none';
-  document.getElementById('menu_principal').style.display = 'none';
-
-  document.getElementById(container_id).style.display = 'block';
-}
+// Esta función cambia los estilos de los botones que el usuario puede utilizar para indicar si quiere 
+// consultar datos sobre un único país, o si quiere comparar dos países. Además, registra los valores 
+// "1" o "2" en base al botón seleccionado, para utilizarlos en la función que muestra los datos
 
 var uno_o_dos = 1;
 
-function uno_o_dos_paises(id_button){
-  document.getElementById(id_button).style.backgroundColor='#573A5C';
-  if (id_button==='un_pais') {
-    document.getElementById('dos_paises').style.backgroundColor='#a19ca2';
+function uno_o_dos_paises(id_button) {
+  document.getElementById(id_button).style.backgroundColor = '#573A5C';
+  if (id_button === 'un_pais') {
+    document.getElementById('dos_paises').style.backgroundColor = '#a19ca2';
     var uno_o_dos = 1;
     console.log(uno_o_dos)
   } else {
-    document.getElementById('un_pais').style.backgroundColor='#a19ca2';
-    var uno_o_dos = 2; 
+    document.getElementById('un_pais').style.backgroundColor = '#a19ca2';
+    var uno_o_dos = 2;
     console.log(uno_o_dos)
   }
 }

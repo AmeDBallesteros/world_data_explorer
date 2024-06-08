@@ -1,4 +1,5 @@
-/* public/styles.css */
+/* Estilos default para la página principal */
+
 body, html {
     margin: 0;
     padding: 0;
@@ -12,6 +13,25 @@ body, html {
   height: 100vh;
 }
 
+.no-padding{
+  padding: 0% !important;
+  margin: 0% !important;
+}
+
+#map-container {
+  position: relative;
+  height: 100vh;
+}
+
+#map {
+  background-color: #5A6E73;
+  height: 100%;
+  z-index: 0;
+}
+
+
+/* Estilos para la barra de navegación y los submenús */
+
 .custom-h2{
   padding: 1em;
   padding-bottom: 0.5em;
@@ -23,18 +43,8 @@ body, html {
   font-style: normal;
 }
 
-.paragraph-button{
-  padding: 0;
-  margin: 0;
-}
-
-.no-padding{
-  padding: 0% !important;
-  margin: 0% !important;
-}
-
-#button-volver-atras {
-  background-color: #3C3B34 !important;
+.custom-button {
+  margin: 1em;
 }
 
 .button-nav{
@@ -52,10 +62,8 @@ body, html {
   background-color: #5A6E73 !important;
 }
 
-
-#container_bienestar_social{
-  max-height: 100vh;
-  overflow-y: auto;
+#button-volver-atras {
+  background-color: #3C3B34 !important;
 }
 
 #button-container {
@@ -68,9 +76,9 @@ body, html {
   z-index: 2000;
   pointer-events: auto;
 }
-.custom-button {
-  margin: 1em;
-}
+
+
+/* Estilos para los botones que indican si se consulta uno o dos países */
 
 #un_pais{
   background-color: #573A5C;
@@ -85,15 +93,5 @@ body, html {
 #un_pais:hover, #dos_paises:hover{
   background-color: #573A5C;
   border: none;
-}
-
-#map-container {
-  position: relative;
-  height: 100vh;
-}
-#map {
-  background-color: #5A6E73;
-  height: 100%;
-  z-index: 0;
 }
 
