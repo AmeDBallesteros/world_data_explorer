@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // realizar búsquedas de ubicaciones utilizando los datos de OpenStreetMap. Se configura el inglés como
   // idioma preferido para los resultados de la búsqueda
 
-  const proveedor = new window.GeoSearch.OpenStreetMapProvider({
+  const provider = new window.GeoSearch.OpenStreetMapProvider({
     params: {
       'accept-language': 'en', 
     },
@@ -71,17 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       },
       click: function (e) {
-        const capa_geojson = this; 
-        var nombre_pais = feature.properties.name;
-        manejar_seleccion_paises(nombre_pais, capa_geojson);
-        capa_geojson.eachcapa_geojson(function (pais) {
-          pais.options.clicked = false;
-          capa_geojson.resetStyle(pais);
-        });
-        pais.setStyle(click_estilo());
-        pais.options.clicked = true;
-        var nombre_pais = feature.properties.name; /////////// //let selectedCountries = [];
-        fetch_data_pais(nombre_pais);
+        manejar_seleccion_paises(feature.properties.name, pais);
       }
     });
   }
@@ -119,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const latitud_longitud = e.latlng;
     var nombre_pais = await obtener_nombre_pais(latitud_longitud);
     if (nombre_pais) {
-        manejar_seleccion_paises(nombre_pais, e.capa_geojson);
+      manejar_seleccion_paises(nombre_pais, e.layer);
     } else {
       console.error('No ha sido posible obtener el nombre del país.');
     }
@@ -144,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function obtener_nombre_pais(latitud_longitud) {
     try {
-      const resultado = await provider.search({ query: `${latitud_longitud.lat},${latitud_longitud.lng}` });
+      const resultado = await proveedor.search({ query: `${latitud_longitud.lat},${latitud_longitud.lng}` });
 
       if (resultado && resultado.length > 0) {
         const direccion = resultado[0].raw.display_name;
@@ -225,26 +215,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   var paises_seleccionados = [];
 
-  function manejar_seleccion_paises(nombre_pais, capa_geojson) {
+  function manejar_seleccion_paises(nombre_pais, pais) {
+
     if (uno_o_dos === 1) {
-      
+      capa_geojson.eachLayer(function (p) {
+        p.options.clicked = false;
+        capa_geojson.resetStyle(p);
+      });
       paises_seleccionados = [nombre_pais];
       fetch_data_pais(nombre_pais);
 
-      capa_geojson.eachLayer(function (pais) {
-        pais.options.clicked = false;
-        capa_geojson.resetStyle(pais);
+      capa_geojson.eachLayer(function (p) {
+        if (p.feature.properties.name === nombre_pais) {
+          p.setStyle(click_estilo());
+          p.options.clicked = true;
+        }
       });
-      capa_geojson.setStyle(click_estilo());
-      capa_geojson.options.clicked = true;
 
     } else {
-      
-      if (paises_seleccionados.length < 2) {
+      if (paises_seleccionados.length < 2 && !paises_seleccionados.includes(nombre_pais)) {
         paises_seleccionados.push(nombre_pais);
         fetch_data_pais(nombre_pais);
-        capa_geojson.setStyle(click_estilo());
-        capa_geojson.options.clicked = true;
+
+        capa_geojson.eachLayer(function (p) {
+          if (p.feature.properties.name === nombre_pais) {
+            p.setStyle(click_estilo());
+            p.options.clicked = true;
+          }
+        });
       }
       if (paises_seleccionados.length === 2) {
         console.log('Dos países seleccionados:', paises_seleccionados);
@@ -305,28 +303,26 @@ function volver_atras() {
   document.getElementById('container_seguridad').style.display = 'none';
 }
 
-button_volver_atras.onclick = volver_atras;
+document.getElementById('button_volver_atras').onclick = volver_atras;
 
 
 // Esta función cambia los estilos de los botones que el usuario puede utilizar para indicar si quiere 
 // consultar datos sobre un único país, o si quiere comparar dos países. Además, registra los valores 
 // "1" o "2" en base al botón seleccionado, para utilizarlos en la función que muestra los datos
 
-var uno_o_dos = 1;
-
 function uno_o_dos_paises(id_button) {
   document.getElementById(id_button).style.backgroundColor = '#573A5C';
   if (id_button === 'un_pais') {
     document.getElementById('dos_paises').style.backgroundColor = '#a19ca2';
-    var uno_o_dos = 1;
-    var paises_seleccionados = [];
-    console.log(uno_o_dos)
+    uno_o_dos = 1;
+    paises_seleccionados = [];
+    resetear(); // Resetear el mapa cuando se cambia a un país
+    console.log(uno_o_dos);
   } else {
     document.getElementById('un_pais').style.backgroundColor = '#a19ca2';
-    var uno_o_dos = 2;
-    var paises_seleccionados = [];
-    console.log(uno_o_dos)
+    uno_o_dos = 2;
+    paises_seleccionados = [];
+    resetear(); // Resetear el mapa cuando se cambia a dos países
+    console.log(uno_o_dos);
   }
 }
-
-
