@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const respuesta = await fetch(`/data_pais/${nombre_pais}`);
       const data = await respuesta.json();
       console.log("Datos solicitados");
-      //mostrar_datos_pais(data);
+      mostrar_datos_pais(data);
     } catch (error) {
       console.error('Hubo un error al tratar de obtener los datos del país:', error);
     }
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Función que muestra los datos del país
 
-  /* function mostrar_datos_pais(data) {
+/*   function mostrar_datos_pais(data) {
     console.log(data);
     const container_data_pais = document.getElementById('data_pais');
     if (data[1] && data[1][0]) {
@@ -216,10 +216,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function displayIndicatorData(data) {
     console.log(data);
 
-  } */
+  }  */
 
-  
-  // Manejar la extracción de datos en función de si se desea consultar un solo país o comparar dos países
+
+  // Manejar la extracción de datos en función de si se desea consultar un solo país o comparar dos países. Si solo se
+  // desea consultar un país, este se registra en el array paises_seleccionados y se extraen los datos elegidos. Si se
+  // van a comparar dos países, 
 
   var paises_seleccionados = [];
 

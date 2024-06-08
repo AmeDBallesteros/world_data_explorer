@@ -5,6 +5,7 @@ body, html {
     padding: 0;
     height: 100%;
     width: 100%;
+    background-color: #142624;
   }
 
 #nav-bar {
@@ -78,14 +79,14 @@ body, html {
 }
 
 
-/* Estilos para los botones que indican si se consulta uno o dos países */
+/* Estilos para los botones que indican si se consulta uno o dos países, el de ir a la data y el de reset */
 
 #un_pais{
   background-color: #573A5C;
   border: none;
 }
 
-#dos_paises{
+#dos_paises, #button_reset, #button_go{
   background-color: #a19ca2;
   border: none;
 }
@@ -95,3 +96,12 @@ body, html {
   border: none;
 }
 
+#button_reset:hover{
+  background-color: #994e4e;
+  border: none;
+}
+
+#button_go:hover{
+  background-color: #438863;
+  border: none;
+}
