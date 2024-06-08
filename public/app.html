@@ -328,10 +328,11 @@
       <div class="col-8 no-padding" id="container_map">
         <div id="map" class="no-padding">
 
-          <!-- Botones para elegir si se consultan datos para un solo país o se comparan datos para dos países -->
+          <!-- Botones para elegir si se consultan datos para un solo país o se comparan datos para dos países, y reset -->
           <div id="button-container">
             <button class="btn btn-primary custom-button" id="un_pais" value="1" onclick="uno_o_dos_paises('un_pais')">Consultar datos para 1 país</button>
             <button class="btn btn-secondary custom-button" id="dos_paises" value="2" onclick="uno_o_dos_paises('dos_paises')">Comparar datos para 2 países</button>
+            <button class="btn btn-danger" id="button_reset" onclick="resetear()">Reset</button>
           </div>
 
         </div>

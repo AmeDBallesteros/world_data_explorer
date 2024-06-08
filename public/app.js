@@ -71,7 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       },
       click: function (e) {
-        capa_geojson.eachLayer(function (pais) {
+        const capa_geojson = this; 
+        var nombre_pais = feature.properties.name;
+        manejar_seleccion_paises(nombre_pais, capa_geojson);
+        capa_geojson.eachcapa_geojson(function (pais) {
           pais.options.clicked = false;
           capa_geojson.resetStyle(pais);
         });
@@ -116,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const latitud_longitud = e.latlng;
     var nombre_pais = await obtener_nombre_pais(latitud_longitud);
     if (nombre_pais) {
-      fetch_data_pais(nombre_pais);
+        manejar_seleccion_paises(nombre_pais, e.capa_geojson);
     } else {
       console.error('No ha sido posible obtener el nombre del país.');
     }
@@ -215,6 +218,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
   } */
 
+  
+  // Manejar la extracción de datos en función de si se desea consultar un solo país o comparar dos países
+
+  var paises_seleccionados = [];
+
+  function manejar_seleccion_paises(nombre_pais, capa_geojson) {
+    if (uno_o_dos === 1) {
+      
+      paises_seleccionados = [nombre_pais];
+      fetch_data_pais(nombre_pais);
+
+      capa_geojson.eachLayer(function (pais) {
+        pais.options.clicked = false;
+        capa_geojson.resetStyle(pais);
+      });
+      capa_geojson.setStyle(click_estilo());
+      capa_geojson.options.clicked = true;
+
+    } else {
+      
+      if (paises_seleccionados.length < 2) {
+        paises_seleccionados.push(nombre_pais);
+        fetch_data_pais(nombre_pais);
+        capa_geojson.setStyle(click_estilo());
+        capa_geojson.options.clicked = true;
+      }
+      if (paises_seleccionados.length === 2) {
+        console.log('Dos países seleccionados:', paises_seleccionados);
+      }
+    }
+  }
+  
+
+  // Función para vaciar el array de países seleccionados y poder comenzar la selección de nuevo
+
+  function resetear() {
+
+    paises_seleccionados = [];
+
+    capa_geojson.eachLayer(function (pais) {
+      pais.options.clicked = false;
+      capa_geojson.resetStyle(pais);
+    });
+
+  }
+
+  document.getElementById('button_reset').addEventListener('click', resetear);
+
 
   // Asignar al mapa la función de encontrar el país cuando se haga click sobre el mapa
 
@@ -266,11 +317,14 @@ function uno_o_dos_paises(id_button) {
   if (id_button === 'un_pais') {
     document.getElementById('dos_paises').style.backgroundColor = '#a19ca2';
     var uno_o_dos = 1;
+    var paises_seleccionados = [];
     console.log(uno_o_dos)
   } else {
     document.getElementById('un_pais').style.backgroundColor = '#a19ca2';
     var uno_o_dos = 2;
+    var paises_seleccionados = [];
     console.log(uno_o_dos)
   }
 }
+
 
