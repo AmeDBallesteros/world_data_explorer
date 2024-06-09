@@ -194,81 +194,106 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function fetch_data_pais(nombre_pais) {
     try {
-      const respuesta = await fetch(`/data_pais/${nombre_pais}`);
-      const data = await respuesta.json();
-      console.log("Datos solicitados");
-      mostrar_datos_pais(data);
+        const respuesta = await fetch(`/data_pais/${nombre_pais}`);
+        const data = await respuesta.json();
+        console.log("Datos solicitados");
+        return data;
     } catch (error) {
-      console.error('Hubo un error al tratar de obtener los datos del país:', error);
+        console.error('Hubo un error al tratar de obtener los datos del país:', error);
+        throw error;
     }
-  }
+}
 
 
   // Función que muestra los datos del país
   
-  function mostrar_datos_pais(data) {
-    console.log(data);
-    const container_data_pais = document.getElementById('data_pais');
-    if (data[1] && data[1][0]) {
-      const countryInfo = data[1][0];
-      container_data_pais.innerHTML = `
-      <div class="row p-3">
-        <button id="resetear_button" class="btn btn-primary">
-        <i class="bi bi-x-square" ></i>
-        </button>
-        <h3>${countryInfo.name} <span id="countryiso"> ${countryInfo.iso2Code}</span></h3>
-        <canvas id="myLineChart" width="400" height="200"></canvas>
-      </div>
-      `;
-      document.getElementById("resetear_button").addEventListener("click", resetear)
-      document.querySelectorAll(".btn.button-nav.btn-primary.w-100").forEach(button => {
-        button.addEventListener("click", async (event) => {
-          console.log("clicked");
-          var iso = document.getElementById("countryiso").innerText.trim().toLowerCase();
-          var indicator = event.target.value;
-          console.log(indicator)
-          try {
-            const respuesta = await fetch(`http://api.worldbank.org/v2/country/${iso}/indicator/${indicator}?format=json`);
-            const data = await respuesta.json();
-            displayIndicatorData(data);
-          } catch (error) {
-            console.error('Hubo un error tratando de obtener datos para esa categoría:', error);
-          }
-        });
-      });
-    } else {
-      container_data_pais.innerHTML = `<p>No data available for this country.</p>`;
+  function mostrar_datos_pais(data1, data2 = null) {
+    console.log(data1);
+    if (data2) {
+      console.log(data2);
     }
-  } 
+    const container_data_pais = document.getElementById('data_pais');
+    const countryInfo1 = data1[1][0];
+    
+    container_data_pais.innerHTML = `
+        <div class="row p-3">
+            <button id="resetear_button" class="btn btn-primary">
+                <i class="bi bi-x-square"></i>
+            </button>
+            <h3>${countryInfo1.name} <span id="countryiso1"> ${countryInfo1.iso2Code}</span></h3>
+            ${data2 ? `<h3>${data2[1][0].name} <span id="countryiso2"> ${data2[1][0].iso2Code}</span></h3>` : ''}
+            <canvas id="myLineChart" width="400" height="200"></canvas>
+        </div>
+    `;
+    document.getElementById("resetear_button").addEventListener("click", resetear);
+    
+    document.querySelectorAll(".btn.button-nav.btn-primary.w-100").forEach(button => {
+      button.addEventListener("click", async (event) => {
+        console.log("clicked");
+        var indicator = event.target.value;
+        const iso1 = document.getElementById("countryiso1").innerText.trim().toLowerCase();
+        if (data2) {
+            const iso2 = document.getElementById("countryiso2").innerText.trim().toLowerCase();
+            Promise.all([
+                fetch(`http://api.worldbank.org/v2/country/${iso1}/indicator/${indicator}?format=json`).then(res => res.json()),
+                fetch(`http://api.worldbank.org/v2/country/${iso2}/indicator/${indicator}?format=json`).then(res => res.json())
+            ]).then(([data1, data2]) => {
+                displayIndicatorData(data1, data2);
+            }).catch(error => {
+                console.error('Hubo un error tratando de obtener datos para esa categoría:', error);
+            });
+        } else {
+            fetch(`http://api.worldbank.org/v2/country/${iso1}/indicator/${indicator}?format=json`)
+                .then(res => res.json())
+                .then(data => displayIndicatorData(data))
+                .catch(error => {
+                    console.error('Hubo un error tratando de obtener datos para esa categoría:', error);
+                });
+        }
+      });
+    });
+
+}
   let myLineChart;
 
-  function displayIndicatorData(data) {
+  function displayIndicatorData(data1, data2 = null) {
+    console.log(data1, data2);
 
-    console.log(data);
-    const filteredData = data[1].filter(item => item.value !== null);
-    console.log(filteredData)
-    const labels = filteredData.map(item => item.date);
-    const values = filteredData.map(item => item.value);
-    console.log(labels)
-    console.log(values)
+    const filteredData1 = data1[1]
+    const labels = filteredData1.map(item => item.date);
+    const values1 = filteredData1.map(item => item.value);
+
+    let datasets = [{
+        label: 'Country 1: Life expectancy at birth, total (years)',
+        data: values1,
+        borderColor: 'rgb(75, 192, 192)',
+        fill: false,
+        tension: 0.1
+    }];
+
+    if (data2) {
+        const filteredData2 = data2[1]
+        const values2 = filteredData2.map(item => item.value);
+        datasets.push({
+            label: 'Country 2: Life expectancy at birth, total (years)',
+            data: values2,
+            borderColor: 'rgb(255, 99, 132)',
+            fill: false,
+            tension: 0.1
+        });
+    }
 
     const ctx = document.getElementById('myLineChart').getContext('2d');
 
-    // Create the line chart
     if (myLineChart) {
-      myLineChart.destroy();
+        myLineChart.destroy();
     }
+
     myLineChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Life expectancy at birth, total (years)',
-                data: values,
-                borderColor: 'rgb(75, 192, 192)',
-                fill: false,
-                tension: 0.1
-            }]
+            datasets: datasets
         },
         options: {
             scales: {
@@ -289,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-  } 
+}
 
 
   // Manejar la extracción de datos en función de si se desea consultar un solo país o comparar dos países. Si solo se
@@ -349,19 +374,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Función para mostrar el overlay
   function mostrar_overlay() {
+    const overlay = document.getElementById('data_pais');
+    overlay.style.display = 'block';
+    document.getElementById('button-container').style.display = 'none';
+    document.getElementById('map').style.display = 'none';
+    
     if (uno_o_dos === 1 && paises_seleccionados.length === 1) {
-      const overlay = document.getElementById('data_pais');
-      overlay.style.display = 'block';
-      document.getElementById('button-container').style.display = 'none';
-      document.getElementById('map').style.display = 'none';
-      fetch_data_pais(paises_seleccionados[0])
-    } else if(uno_o_dos === 2 && paises_seleccionados.length === 1){
-
+      Promise.all([
+        fetch_data_pais(paises_seleccionados[0])
+    ]).then(([data1]) => {
+            console.log(data1)
+            mostrar_datos_pais(data1);
+        });
+    } else if (uno_o_dos === 2 && paises_seleccionados.length === 2) {
+        Promise.all([
+            fetch_data_pais(paises_seleccionados[0]),
+            fetch_data_pais(paises_seleccionados[1])
+        ]).then(([data1, data2]) => {
+            mostrar_datos_pais(data1, data2);
+        }).catch(error => {
+            console.error('Error fetching data for both countries:', error);
+        });
     } else {
-      console.log("are you stupid??")
+        console.log("are you stupid??");
     }
-
-  }
+}
 
     // Asignar al mapa la función de encontrar el país cuando se haga click sobre el mapa
 
