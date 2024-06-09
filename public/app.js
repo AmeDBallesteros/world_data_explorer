@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const respuesta = await fetch(`/data_pais/${nombre_pais}`);
       const data = await respuesta.json();
       console.log("Datos solicitados");
-      // mostrar_datos_pais(data);
+      mostrar_datos_pais(data);
     } catch (error) {
       console.error('Hubo un error al tratar de obtener los datos del país:', error);
     }
@@ -205,23 +205,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // Función que muestra los datos del país
-
-/*   function mostrar_datos_pais(data) {
+  
+  function mostrar_datos_pais(data) {
     console.log(data);
     const container_data_pais = document.getElementById('data_pais');
     if (data[1] && data[1][0]) {
       const countryInfo = data[1][0];
       container_data_pais.innerHTML = `
       <div class="row p-3">
+        <button id="resetear_button" class="btn btn-primary">
+        <i class="bi bi-x-square" ></i>
+        </button>
         <h3>${countryInfo.name} <span id="countryiso"> ${countryInfo.iso2Code}</span></h3>
+        <canvas id="myLineChart" width="400" height="200"></canvas>
       </div>
       `;
-
+      document.getElementById("resetear_button").addEventListener("click", resetear)
       document.querySelectorAll(".btn.button-nav.btn-primary.w-100").forEach(button => {
         button.addEventListener("click", async (event) => {
           console.log("clicked");
           var iso = document.getElementById("countryiso").innerText.trim().toLowerCase();
           var indicator = event.target.value;
+          console.log(indicator)
           try {
             const respuesta = await fetch(`http://api.worldbank.org/v2/country/${iso}/indicator/${indicator}?format=json`);
             const data = await respuesta.json();
@@ -235,11 +240,56 @@ document.addEventListener('DOMContentLoaded', () => {
       container_data_pais.innerHTML = `<p>No data available for this country.</p>`;
     }
   } 
+  let myLineChart;
 
   function displayIndicatorData(data) {
-    console.log(data);
 
-  }  */
+    console.log(data);
+    const filteredData = data[1].filter(item => item.value !== null);
+    console.log(filteredData)
+    const labels = filteredData.map(item => item.date);
+    const values = filteredData.map(item => item.value);
+    console.log(labels)
+    console.log(values)
+
+    const ctx = document.getElementById('myLineChart').getContext('2d');
+
+    // Create the line chart
+    if (myLineChart) {
+      myLineChart.destroy();
+    }
+    myLineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Life expectancy at birth, total (years)',
+                data: values,
+                borderColor: 'rgb(75, 192, 192)',
+                fill: false,
+                tension: 0.1
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Year'
+                    }
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Life Expectancy (years)'
+                    }
+                }
+            }
+        }
+    });
+  } 
 
 
   // Manejar la extracción de datos en función de si se desea consultar un solo país o comparar dos países. Si solo se
@@ -259,7 +309,10 @@ document.addEventListener('DOMContentLoaded', () => {
       pais.options.clicked = false;
       capa_geojson.resetStyle(pais);
     });
-  
+    document.getElementById('data_pais').style.display = 'none';
+    document.getElementById('button-container').style.display = 'block';
+    document.getElementById('map').style.display = 'block';
+    
   }
   
   document.getElementById('button_reset').addEventListener('click', resetear);
@@ -289,23 +342,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Función para vaciar el array de países seleccionados y poder comenzar la selección de nuevo
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // Agregar event listener para el botón "button_go"
   document.getElementById('button_go').addEventListener('click', () => {
     mostrar_overlay();
@@ -313,10 +349,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Función para mostrar el overlay
   function mostrar_overlay() {
-    const overlay = document.getElementById('data_pais');
-    overlay.style.display = 'block';
-    document.getElementById('button-container').style.display = 'none';
-    document.getElementById('map').style.display = 'none';
+    if (uno_o_dos === 1 && paises_seleccionados.length === 1) {
+      const overlay = document.getElementById('data_pais');
+      overlay.style.display = 'block';
+      document.getElementById('button-container').style.display = 'none';
+      document.getElementById('map').style.display = 'none';
+      fetch_data_pais(paises_seleccionados[0])
+    } else if(uno_o_dos === 2 && paises_seleccionados.length === 1){
+
+    } else {
+      console.log("are you stupid??")
+    }
+
   }
 
     // Asignar al mapa la función de encontrar el país cuando se haga click sobre el mapa
