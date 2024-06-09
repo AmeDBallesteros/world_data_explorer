@@ -71,7 +71,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       },
       click: function (e) {
-        manejar_seleccion_paises(feature.properties.name, pais);
+        if(uno_o_dos === 1){
+          capa_geojson.resetStyle();
+          pais.setStyle(click_estilo());
+          pais.options.clicked = true;
+
+        }
+        else if(uno_o_dos === 2){
+          if (paises_seleccionados.length === 0) {
+            capa_geojson.resetStyle();
+            pais.setStyle(click_estilo());
+            pais.options.clicked = true;
+
+          } else if(paises_seleccionados.length === 1 && paises_seleccionados[0] != pais){
+            pais.setStyle(click_estilo());
+            pais.options.clicked = true;
+
+          }
+
+        }
       }
     });
   }
@@ -109,7 +127,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const latitud_longitud = e.latlng;
     var nombre_pais = await obtener_nombre_pais(latitud_longitud);
     if (nombre_pais) {
-      manejar_seleccion_paises(nombre_pais, e.layer);
+      if(uno_o_dos === 1){
+        paises_seleccionados[0] = nombre_pais
+
+      }
+      else if(uno_o_dos === 2){
+        if (paises_seleccionados.length === 0) {
+          paises_seleccionados[0] = nombre_pais
+
+        } else if(paises_seleccionados.length === 1 && paises_seleccionados[0] != nombre_pais ){
+          paises_seleccionados[1] = nombre_pais
+        }
+
+      }
+      console.log(nombre_pais)
+      console.log(paises_seleccionados)
     } else {
       console.error('No ha sido posible obtener el nombre del país.');
     }
@@ -216,40 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   var paises_seleccionados = [];
 
-  function manejar_seleccion_paises(nombre_pais, pais) {
-
-    if (uno_o_dos === 1) {
-      capa_geojson.eachLayer(function (p) {
-        p.options.clicked = false;
-        capa_geojson.resetStyle(p);
-      });
-      paises_seleccionados = [nombre_pais];
-      fetch_data_pais(nombre_pais);
-
-      capa_geojson.eachLayer(function (p) {
-        if (p.feature.properties.name === nombre_pais) {
-          p.setStyle(click_estilo());
-          p.options.clicked = true;
-        }
-      });
-
-    } else {
-      if (paises_seleccionados.length < 2 && !paises_seleccionados.includes(nombre_pais)) {
-        paises_seleccionados.push(nombre_pais);
-        fetch_data_pais(nombre_pais);
-
-        capa_geojson.eachLayer(function (p) {
-          if (p.feature.properties.name === nombre_pais) {
-            p.setStyle(click_estilo());
-            p.options.clicked = true;
-          }
-        });
-      }
-      if (paises_seleccionados.length === 2) {
-        console.log('Dos países seleccionados:', paises_seleccionados);
-      }
-    }
-  }
+  
   
 
   function resetear() {
@@ -264,6 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   document.getElementById('button_reset').addEventListener('click', resetear);
+
+
   // Esta función cambia los estilos de los botones que el usuario puede utilizar para indicar si quiere 
   // consultar datos sobre un único país, o si quiere comparar dos países. Además, registra los valores 
   // "1" o "2" en base al botón seleccionado, para utilizarlos en la función que muestra los datos
@@ -310,62 +311,18 @@ document.addEventListener('DOMContentLoaded', () => {
     mostrar_overlay();
   });
 
-  // Agregar event listener para el botón de cerrar el overlay
-  document.getElementById('close-overlay').addEventListener('click', () => {
-    ocultar_overlay();
-  });
-
   // Función para mostrar el overlay
   function mostrar_overlay() {
-    const overlay = document.getElementById('container-overlay');
-    const lista_paises = document.getElementById('selected_countries_list');
-    lista_paises.innerHTML = ''; // Limpiar lista existente
-
-    paises_seleccionados.forEach((pais) => {
-      const listItem = document.createElement('li');
-      listItem.textContent = pais;
-      lista_paises.appendChild(listItem);
-    });
-
+    const overlay = document.getElementById('data_pais');
     overlay.style.display = 'block';
+    document.getElementById('button-container').style.display = 'none';
+    document.getElementById('map').style.display = 'none';
   }
-
-  // Función para ocultar el overlay
-  function ocultar_overlay() {
-    const overlay = document.getElementById('container-overlay');
-    overlay.style.display = 'none';
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     // Asignar al mapa la función de encontrar el país cuando se haga click sobre el mapa
 
     map.on('click', encontrar_pais);
 });
-
-
-
-
-
-
-
 
 
 // Función para mostrar los submenús de las distintas categorías. Al hacer click en una de las categorías
@@ -396,9 +353,8 @@ function volver_atras() {
   document.getElementById('container_seguridad').style.display = 'none';
 }
 
-document.getElementById('button-volver-atras').addEventListener("click", volver_atras)
-
-
-
+document.querySelectorAll(".button-volver-atras").forEach(function(button) {
+  button.addEventListener('click', volver_atras);
+});
 
 
