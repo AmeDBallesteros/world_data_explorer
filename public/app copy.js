@@ -374,6 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function mostrar_submenu(container_id) {
 
+  document.getElementById('h2_categorias').style.display = 'none';
   document.getElementById('menu_principal').style.display = 'none';
 
   document.getElementById(container_id).style.display = 'block';
@@ -383,6 +384,7 @@ function mostrar_submenu(container_id) {
 //Función para volver al menú principal desde los submenús
 
 function volver_atras() {
+  document.getElementById('h2_categorias').style.display = 'block';
   document.getElementById('menu_principal').style.display = 'block';
   document.getElementById('container_bienestar_social').style.display = 'none';
   document.getElementById('container_cultura').style.display = 'none';
