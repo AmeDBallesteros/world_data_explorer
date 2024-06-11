@@ -5,7 +5,7 @@ html, body {
     width: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevent scrolling */
+    overflow: hidden;
   }
 
   .full-screen {
@@ -73,5 +73,10 @@ html, body {
   
   #button_go:hover{
     background-color: #438863;
+    border: none;
+  }
+
+  #button_reset:hover{
+    background-color: #994e4e;
     border: none;
   }

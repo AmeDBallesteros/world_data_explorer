@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // Función que muestra los datos del país
-  
+
   function mostrar_datos_pais(data1, data2 = null) {
     console.log(data1);
     if (data2) {
@@ -217,20 +217,21 @@ document.addEventListener('DOMContentLoaded', () => {
     
     container_data_pais.innerHTML = `
         <div class="row p-3">
-            <button id="resetear_button" class="btn btn-primary">
-                <i class="bi bi-x-square"></i>
+            <button id="resetear_button" class="btn btn-primary" style="background-color: #573A5C; border: none;">
+                <i class="bi bi-x-square" ></i>
             </button>
-            <h3>${countryInfo1.name} <span id="countryiso1"> ${countryInfo1.iso2Code}</span></h3>
+            <h3>${countryInfo1.name} <span id="countryiso1"> ${countryInfo1.iso2Code}</span><span id="countryiso1_indicator"></span> </h3>
             ${data2 ? `<h3>${data2[1][0].name} <span id="countryiso2"> ${data2[1][0].iso2Code}</span></h3>` : ''}
             <canvas id="myLineChart" width="400" height="200"></canvas>
         </div>
     `;
     document.getElementById("resetear_button").addEventListener("click", resetear);
     
-    document.querySelectorAll(".btn.button-nav.btn-primary.w-100").forEach(button => {
+    document.querySelectorAll(".btn.button-nav.btn-primary.w-75.p-2.mb-2").forEach(button => {
       button.addEventListener("click", async (event) => {
         console.log("clicked");
         var indicator = event.target.value;
+        document.getElementById("countryiso1_indicator").innerText = ` ${event.target.innerText}` ;
         const iso1 = document.getElementById("countryiso1").innerText.trim().toLowerCase();
         if (data2) {
             const iso2 = document.getElementById("countryiso2").innerText.trim().toLowerCase();
@@ -261,11 +262,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const filteredData1 = data1[1]
     const labels = filteredData1.map(item => item.date);
+    
+
     const values1 = filteredData1.map(item => item.value);
 
+
     let datasets = [{
-        label: 'Country 1: Life expectancy at birth, total (years)',
-        data: values1,
+        label: paises_seleccionados[0].toUpperCase(),
+        data: values1.reverse(),
         borderColor: 'rgb(75, 192, 192)',
         fill: false,
         tension: 0.1
@@ -275,8 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const filteredData2 = data2[1]
         const values2 = filteredData2.map(item => item.value);
         datasets.push({
-            label: 'Country 2: Life expectancy at birth, total (years)',
-            data: values2,
+            label: paises_seleccionados[1].toUpperCase(),
+            data: values2.reverse(),
             borderColor: 'rgb(255, 99, 132)',
             fill: false,
             tension: 0.1
@@ -292,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     myLineChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: labels.reverse(),
             datasets: datasets
         },
         options: {
@@ -308,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     display: true,
                     title: {
                         display: true,
-                        text: 'Life Expectancy (years)'
+                        
                     }
                 }
             }
@@ -334,9 +338,12 @@ document.addEventListener('DOMContentLoaded', () => {
       pais.options.clicked = false;
       capa_geojson.resetStyle(pais);
     });
+    volver_atras()
     document.getElementById('data_pais').style.display = 'none';
     document.getElementById('button-container').style.display = 'block';
     document.getElementById('map').style.display = 'block';
+    document.getElementById('menu_principal').style.display = 'none';
+    document.getElementById('inicio').style.display = 'block';
     
   }
   
@@ -376,8 +383,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function mostrar_overlay() {
     const overlay = document.getElementById('data_pais');
     overlay.style.display = 'block';
+    document.getElementById('menu_principal').style.display= 'block';
     document.getElementById('button-container').style.display = 'none';
     document.getElementById('map').style.display = 'none';
+    document.getElementById('inicio').style.display = 'none';
     
     if (uno_o_dos === 1 && paises_seleccionados.length === 1) {
       Promise.all([
@@ -395,9 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(error => {
             console.error('Error fetching data for both countries:', error);
         });
-    } else {
-        console.log("are you stupid??");
-    }
+    } 
 }
 
     // Asignar al mapa la función de encontrar el país cuando se haga click sobre el mapa
