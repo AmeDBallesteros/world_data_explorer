@@ -10,6 +10,9 @@ const path = require('path');
 // Módulo para convertir nombres de países a su código ISO
 const countrytoiso = require('country-to-iso');
 
+// Modulo de NewsAPI y creación de una instancia NewsAPI
+const NewsAPI = require('newsapi');
+const newsapi = new NewsAPI('bd8463d01553444eaaa2f8ba7e471c37');
 
 // Crea una instancia de aplicación de Express en el puerto 3000
 const app = express();
@@ -48,3 +51,19 @@ app.get('/data_pais/:nombre_pais', async (req, res) => {
 app.listen(port, () => {
   console.log(`Acceso al servidor: http://localhost:${port}`);
 });
+
+
+// News API
+
+newsapi.v2.topHeadlines({
+  category: 'business',
+  language: 'es',
+  country: 'us'
+}).then(response => {
+  console.log(response);
+  /*
+    {
+      status: "ok",
+      articles: [...]
+    }
+  */})
